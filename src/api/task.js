@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getDepartmentTask(departmentId) {
   return request({
-    url: '/weeklyReport/department/task/get',
+    url: '/task/department/get',
     method: 'get',
     params: { departmentId }
   })
