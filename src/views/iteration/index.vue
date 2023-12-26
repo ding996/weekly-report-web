@@ -62,9 +62,9 @@ export default {
       departmentTasks: [], // 用于存储搜索结果
       departmentId: 10, //用户所在部门id
       task: {
-        taskId: 3,
-        departmentId: 10,
-        taskName: "第四季度需求",
+        // taskId: 3,
+        // departmentId: 10,
+        // taskName: "第四季度需求",
       },
       ProgressReportDTO: {},
       tableData: [
@@ -95,14 +95,13 @@ export default {
     };
   },
   created() {
-    this.fetchData();
+    //this.fetchData();
   },
   methods: {
     fetchData() {
       progressApi.get(this.task).then((response) => {
         this.ProgressReportDTO = response.data;
         this.tableData = this.ProgressReportDTO.weeklyReports;
-        console.log("tableData:", this.tableData);
       });
     },
     // 查询部门父类任务，但是没赋值给task
@@ -114,20 +113,14 @@ export default {
           data: item, // 将整个任务对象保存在data属性中
         }));
         cb(suggestions); // 将任务名称列表传递给 el-autocomplete 组件
-        // const suggestions = response.data.map((item) => ({
-        //   value: item.taskName,
-        // }));
-        // this.departmentTasks = suggestions.taskName; // 将查询结果赋值给 departmentTasks
-        // cb(suggestions); // 不懂为什么需要
       });
     },
     handleSelect(item) {
       // 用户在下拉框中选择了某个任务后，将对应的任务对象赋值给task
       this.task = item.data;
-
       this.selectedTaskName = item.value; // 将选择的任务名称赋值给selectedTaskName
-      // 处理选项被选择时的逻辑，可以在这里更新 selectedTaskName 值或触发其他操作
-      // this.selectedTaskName = item.value; // 将选择的值赋值给 selectedTaskName
+      this.fetchData();
+
     },
   },
 };
