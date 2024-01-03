@@ -6,5 +6,12 @@ export default {
       method: 'post',
       data: task
     })
+  },
+  saveOrUpdate(progressReportVO) {
+    return request({
+      url: '/progressReport/saveOrUpdate',
+      method: 'post',
+      data: progressReportVO
+    })
   }
 }

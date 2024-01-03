@@ -22,3 +22,12 @@ export function logout() {
     method: 'post'
   })
 }
+
+export function department(parentDepartmentId) {
+  return request({
+    url: '/user/department',
+    method: 'post',
+    params: { parentDepartmentId }
+  })
+}
+

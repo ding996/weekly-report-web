@@ -53,6 +53,7 @@
 <script>
 import { getDepartmentTask } from '@/api/task'
 import progressApi from '@/api/progress'
+import taskConfigApi from '@/api/taskConfig'
 
 export default {
   data() {
