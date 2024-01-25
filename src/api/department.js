@@ -9,7 +9,7 @@ export default {
   },
   getParentDept(departmentId) {
     return request({
-      url: `/findParent/${departmentId}`,
+      url: `/department/findParent/${departmentId}`,
       method: 'get'
     })
   }

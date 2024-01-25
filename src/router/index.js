@@ -47,22 +47,36 @@ export const constantRoutes = [
     path: '/',
     component: Layout,
     redirect: '/dashboard',
-    children: [{
-      path: 'dashboard',
-      name: 'Dashboard',
-      component: () => import('@/views/dashboard/index'),
-      meta: { title: 'Dashboard', icon: 'dashboard' }
-    }]
+    children: [
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: () => import('@/views/dashboard/index'),
+        meta: { title: 'Dashboard', icon: 'dashboard' }
+      }
+    ]
   },
   {
     path: '/iteration',
     component: Layout,
     children: [
       {
-        path: 'index',
+        path: 'iteration',
         name: 'iteration',
         component: () => import('@/views/iteration/index'),
         meta: { title: '进度周报', icon: 'form' }
+      }
+    ]
+  },
+  {
+    path: '/weeklyReport',
+    component: Layout,
+    children: [
+      {
+        path: 'weeklyReport',
+        name: 'weeklyReport',
+        component: () => import('@/views/weeklyReport/index'),
+        meta: { title: '工作周报', icon: 'form' }
       }
     ]
   },
@@ -131,13 +145,15 @@ export const constantRoutes = [
             children: [
               {
                 path: 'menu1-2-1',
-                component: () => import('@/views/nested/menu1/menu1-2/menu1-2-1'),
+                component: () =>
+                  import('@/views/nested/menu1/menu1-2/menu1-2-1'),
                 name: 'Menu1-2-1',
                 meta: { title: 'Menu1-2-1' }
               },
               {
                 path: 'menu1-2-2',
-                component: () => import('@/views/nested/menu1/menu1-2/menu1-2-2'),
+                component: () =>
+                  import('@/views/nested/menu1/menu1-2/menu1-2-2'),
                 name: 'Menu1-2-2',
                 meta: { title: 'Menu1-2-2' }
               }
