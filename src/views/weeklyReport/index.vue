@@ -7,15 +7,16 @@
         }}
       </h3>
       <el-select
-        v-model="value"
+        v-model="departmentIds"
         multiple
         filterable
         allow-create
         default-first-option
         placeholder="请选择组别"
+        @change="handleDeptSelect"
       >
         <el-option
-          v-for="item in options"
+          v-for="item in departments"
           :key="item.value"
           :label="item.label"
           :value="item.value"
@@ -25,13 +26,16 @@
       <div class="block">
         <span class="demonstration">周</span>
         <el-date-picker
-          v-model="value1"
+          :picker-options="{ firstDayOfWeek: 1 }"
+          v-model="datetime"
           type="week"
           format="yyyy 第 WW 周"
           placeholder="选择周"
+          @change="handleDateChange"
         >
         </el-date-picker>
       </div>
+      <p>选择的周对应的日期：{{ this.week }}</p>
     </div>
 
     <div>
@@ -72,47 +76,40 @@ import weeklyReportApi from "@/api/weeklyReport";
 export default {
   data() {
     return {
-      options: [
-        {
-          value: "全部",
-          label: "全部",
-        },
-        {
-          value: "开发一组",
-          label: "开发一组",
-        },
-        {
-          value: "开发二组",
-          label: "开发二组",
-        },
-      ],
-      value: [],
-      value1: "",
+      departments: [],
+      departmentIds: [], //给了一个默认值
+      datetime: "",
+      week: "", //周报的时间
       parentDept: {},
+      WeeklyReportDTOs: [],
       weeklyReport: {},
       moduleWeeklyReportList: [],
     };
   },
   created() {
+    this.fetchParentDept();
     this.fetchData();
   },
   computed: {
     processedData() {
       let result = [];
-      this.moduleWeeklyReportList.forEach((module) => {
-        module.usersWeeklyReports.forEach((user) => {
-          result.push({
-            departmentName: this.weeklyReport.departmentName,
-            departmentLeaderName: this.weeklyReport.departmentLeaderName,
-            deptThisWeekReport: this.weeklyReport.thisWeekReport,
-            deptNextWeekReport: this.weeklyReport.nextWeekReport,
-            moduleName: module.moduleName,
-            moduleLeaderName: module.moduleLeaderName,
-            moduleThisWeekReport: module.weeklyReport.thisWeekReport,
-            moduleNextWeekReport: module.weeklyReport.nextWeekReport,
-            username: user.username,
-            userThisWeekReport: user.thisWeekReport,
-            userNextWeekReport: user.nextWeekReport,
+      this.WeeklyReportDTOs.forEach((department) => {
+        department.moduleWeeklyReportList.forEach((module) => {
+          module.usersWeeklyReports.forEach((user) => {
+            result.push({
+              departmentName: department.weeklyReport.departmentName,
+              departmentLeaderName:
+                department.weeklyReport.departmentLeaderName,
+              deptThisWeekReport: department.weeklyReport.thisWeekReport,
+              deptNextWeekReport: department.weeklyReport.nextWeekReport,
+              moduleName: module.moduleName,
+              moduleLeaderName: module.moduleLeaderName,
+              moduleThisWeekReport: module.weeklyReport.thisWeekReport,
+              moduleNextWeekReport: module.weeklyReport.nextWeekReport,
+              username: user.username,
+              userThisWeekReport: user.thisWeekReport,
+              userNextWeekReport: user.nextWeekReport,
+            });
           });
         });
       });
@@ -121,14 +118,57 @@ export default {
     },
   },
   methods: {
-    fetchData() {
+    fetchParentDept() {
       departmentApi.getParentDept(10).then((response) => {
         this.parentDept = response.data;
+        this.fetchDepartments(); // 在获取父部门信息后调用 fetchDepartments 方法
+        this.departmentIds = this.departments.map(
+          (department) => department.departmentId
+        );
       });
-      weeklyReportApi.getDepartmentReport(10, 20231222).then((response) => {
-        this.moduleWeeklyReportList = response.data.moduleWeeklyReportList;
-        this.weeklyReport = response.data.weeklyReport;
-      });
+    },
+
+    fetchDepartments() {
+      departmentApi
+        .getDepartments(this.parentDept.departmentId)
+        .then((response) => {
+          this.departments = response.data.map((department) => ({
+            value: department.departmentId,
+            label: department.departmentName,
+          }));
+        });
+    },
+
+    fetchData() {
+      for (let i = 0; i < this.departmentIds.length; i++) {
+        weeklyReportApi
+          .getDepartmentReport(this.departmentIds[i], this.week)
+          .then((response) => {
+            this.WeeklyReportDTOs.length = 0;
+            this.WeeklyReportDTOs.push({
+              weeklyReport: response.data.weeklyReport,
+              moduleWeeklyReportList: response.data.moduleWeeklyReportList,
+            });
+          });
+      }
+    },
+    handleDeptSelect() {
+      this.fetchData();
+    },
+    // 需要根据当前日期计算出本周日是几号计算为yyyyMMdd格式的字符串
+    handleDateChange(value) {
+      if (value) {
+        // 获取选择的日期的年份、月份和日期
+        const year = value.getFullYear();
+        const month = String(value.getMonth() + 1).padStart(2, "0");
+        const date = String(value.getDate() + 5).padStart(2, "0");
+
+        // 组合成 yyyymmdd 格式
+        this.week = `${year}${month}${date}`;
+      } else {
+        // 如果日期被清空，重置格式化后的日期字符串
+        this.week = "";
+      }
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
       // 合并模块名称和模块牵头人列
