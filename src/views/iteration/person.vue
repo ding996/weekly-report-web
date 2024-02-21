@@ -5,15 +5,13 @@
       <el-date-picker v-model="yearTime" type="year" placeholder="选择年">
       </el-date-picker>
       <!-- 可以搜索 -->
-      迭代任务：
+      季度：
       <el-autocomplete
-        v-model="selectedTaskName"
+        v-model="selectedTask.name"
         :fetch-suggestions="querydeptTasks"
         placeholder="请输入内容"
         @select="handleSelect"
       />
-
-      <!-- 不让输入 -->
       任务类型：
       <el-select
         v-model="taskType"
@@ -27,27 +25,33 @@
           :value="item"
         />
       </el-select>
+      任务项：
+      <el-select
+        v-model="currentTask"
+        placeholder="请选择"
+        @visible-change="handlePersonSelect"
+      >
+        <el-option
+          v-for="item in personTaskLsits"
+          :key="item.value"
+          :label="item.taskName"
+          :value="item"
+        >
+        </el-option>
+      </el-select>
     </div>
 
     <div>
       <el-table :data="tableData" border style="width: 100%; margin-top: 20px">
-        <el-table-column prop="nickname" label="牵头人" />
-        <el-table-column prop="task.taskName" label="需求" />
+        <el-table-column prop=".weekTime" label="时间" />
         <!-- 直接用子属性名称就行 -->
-        <el-table-column prop="task.stage" label="任务阶段" width="250" />
-        <el-table-column label="迭代进度" width="350">
-          <template slot-scope="scope">
-            <div
-              v-for="(item, index) in scope.row.progressReportList"
-              :key="index"
-            >
-              {{ item.weekTime }}：{{ item.content }}
-              <!-- 在这里展示子列表数据 -->
-            </div>
-          </template>
-        </el-table-column>
-        <!-- 0正常。1延期 -->
-        <el-table-column prop="task.progress" label="进度" />
+        <el-table-column prop="content" label="进度内容" />
+        <el-table-column prop="" label="操作"
+          ><el-button type="primary" icon="el-icon-edit">编辑</el-button>
+          <el-button type="primary" icon="el-icon-delete"
+            >删除</el-button
+          ></el-table-column
+        >
       </el-table>
     </div>
   </div>
@@ -59,11 +63,14 @@ import progressApi from "@/api/progress";
 import taskConfigApi from "@/api/taskConfig";
 import { getInfo } from "@/api/user";
 import { getToken } from "@/utils/auth";
+
 export default {
   data() {
     return {
-      selectedTaskName: "", // 用于绑定搜索框的值
+      yearTime: new Date(),
+      selectedTask: {}, // 用于绑定搜索框的值
       departmentTasks: [], // 用于存储搜索结果
+      personTaskLsits: [],
       departmentId: null, // 用户所在部门id
       task: {},
       taskType: "",
@@ -71,7 +78,7 @@ export default {
       types: [],
       // 展示的值 每一个kv另算
       value: "",
-      yearTime: new Date(),
+      currentTask: {},
     };
   },
   created() {
@@ -79,24 +86,21 @@ export default {
   },
   methods: {
     fetchData() {
-      const processTrans = {
-        0: "正常",
-        1: "延期",
-        2: "不涉及",
-      };
-      progressApi.get(this.task).then((response) => {
-        if (response.data == null) {
-          this.tableData = null;
-        } else {
-          response.data.weeklyReports.forEach((item) => {
-            item.task.progress = processTrans[item.task.progress];
+      this.queryPersonProgressRept();
+    },
+    queryPersonProgressRept() {
+      if (this.currentTask.taskId != null) {
+        progressApi
+          .personGet(1, this.currentTask.taskId, this.taskType)
+          .then((response) => {
+            this.tableData = response.data;
           });
-          this.tableData = response.data.weeklyReports;
-        }
-      });
+      }else {
+        this.tableData = null;
+      }
     },
     // 查询部门父类任务，但是没赋值给task
-    querydeptTasks(departmentId, cb) {
+    querydeptTasks(queryString, cb) {
       taskApi
         .getDepartmentTask(
           this.departmentId,
@@ -123,17 +127,25 @@ export default {
       });
     },
     handleSelect(item) {
-      // 用户在下拉框中选择了某个任务后，将对应的任务对象赋值给task
       this.task = item.data;
-      this.selectedTaskName = item.value; // 将选择的任务名称赋值给selectedTaskName
-      this.task.type = this.taskType;
-      this.fetchData();
+      this.selectedTask.name = this.task.taskName;
+      this.selectedTask.taskId = this.task.taskId;
+    },
+    handlePersonSelect() {
+      if (this.selectedTask.taskId != null) {
+        taskApi
+          .personTaskList(1, this.selectedTask.taskId, this.taskType)
+          .then((response) => {
+            this.personTaskLsits = response.data;
+            this.fetchData();
+          });
+      }
+      
     },
     handleTypeSelect() {
       this.task.type = this.taskType;
-      if (this.departmentTasks.length > 0) {
-        this.fetchData();
-      }
+      this.currentTask = {};
+      this.fetchData();
     },
   },
 };

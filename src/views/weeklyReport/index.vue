@@ -140,16 +140,18 @@ export default {
     },
 
     fetchData() {
-      for (let i = 0; i < this.departmentIds.length; i++) {
-        weeklyReportApi
-          .getDepartmentReport(this.departmentIds[i], this.week)
-          .then((response) => {
-            this.WeeklyReportDTOs.length = 0;
-            this.WeeklyReportDTOs.push({
-              weeklyReport: response.data.weeklyReport,
-              moduleWeeklyReportList: response.data.moduleWeeklyReportList,
+      if (this.departmentIds.length > 0 && this.week != "") {
+        for (let i = 0; i < this.departmentIds.length; i++) {
+          weeklyReportApi
+            .getDepartmentReport(this.departmentIds[i], this.week)
+            .then((response) => {
+              this.WeeklyReportDTOs.length = 0;
+              this.WeeklyReportDTOs.push({
+                weeklyReport: response.data.weeklyReport,
+                moduleWeeklyReportList: response.data.moduleWeeklyReportList,
+              });
             });
-          });
+        }
       }
     },
     handleDeptSelect() {
@@ -161,7 +163,7 @@ export default {
         // 获取选择的日期的年份、月份和日期
         const year = value.getFullYear();
         const month = String(value.getMonth() + 1).padStart(2, "0");
-        const date = String(value.getDate() + 5).padStart(2, "0");
+        const date = String(value.getDate() + 3).padStart(2, "0");
 
         // 组合成 yyyymmdd 格式
         this.week = `${year}${month}${date}`;
@@ -169,6 +171,7 @@ export default {
         // 如果日期被清空，重置格式化后的日期字符串
         this.week = "";
       }
+      this.fetchData();
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
       // 合并模块名称和模块牵头人列

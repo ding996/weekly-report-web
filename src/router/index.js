@@ -59,12 +59,20 @@ export const constantRoutes = [
   {
     path: '/iteration',
     component: Layout,
+    redirect: '/iteration/department',
+    meta: { title: '迭代', icon: 'el-icon-s-help' },
     children: [
       {
-        path: 'iteration',
-        name: 'iteration',
+        path: 'department',
+        name: 'Department',
         component: () => import('@/views/iteration/index'),
         meta: { title: '进度周报', icon: 'form' }
+      },
+      {
+        path: 'person',
+        name: 'Person',
+        component: () => import('@/views/iteration/person'),
+        meta: { title: '个人项目进度', icon: 'form' }
       }
     ]
   },
@@ -77,6 +85,18 @@ export const constantRoutes = [
         name: 'weeklyReport',
         component: () => import('@/views/weeklyReport/index'),
         meta: { title: '工作周报', icon: 'form' }
+      }
+    ]
+  },
+  {
+    path: '/form',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'Form',
+        component: () => import('@/views/form/index'),
+        meta: { title: '迭代进度提交', icon: 'form' }
       }
     ]
   },
@@ -98,19 +118,6 @@ export const constantRoutes = [
         name: 'Tree',
         component: () => import('@/views/tree/index'),
         meta: { title: 'Tree', icon: 'tree' }
-      }
-    ]
-  },
-
-  {
-    path: '/form',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'Form',
-        component: () => import('@/views/form/index'),
-        meta: { title: 'Form', icon: 'form' }
       }
     ]
   },
